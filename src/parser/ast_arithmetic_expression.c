@@ -6,15 +6,16 @@
 */
 
 #include "ast_arithmetic_expression.h"
+#include "../util/rmalloc.h"
 
 AST_ArithmeticExpressionNode* New_AST_AR_EXP_VariableOperandNode(char* alias, char *property) {
-	AST_ArithmeticExpressionNode *node = malloc(sizeof(AST_ArithmeticExpressionNode));
+	AST_ArithmeticExpressionNode *node = rm_malloc(sizeof(AST_ArithmeticExpressionNode));
 	node->type = AST_AR_EXP_OPERAND;
 	node->operand.type = AST_AR_EXP_VARIADIC;
-	node->operand.variadic.alias = strdup(alias);
+	node->operand.variadic.alias = rm_strdup(alias);
 	if(property) {
 		// This is a collapsed entity.
-		node->operand.variadic.property = strdup(property);
+		node->operand.variadic.property = rm_strdup(property);
 	} else {
 		node->operand.variadic.property = NULL;
 	}
@@ -22,7 +23,7 @@ AST_ArithmeticExpressionNode* New_AST_AR_EXP_VariableOperandNode(char* alias, ch
 }
 
 AST_ArithmeticExpressionNode* New_AST_AR_EXP_ConstOperandNode(SIValue constant) {
-	AST_ArithmeticExpressionNode *node = malloc(sizeof(AST_ArithmeticExpressionNode));
+	AST_ArithmeticExpressionNode *node = rm_malloc(sizeof(AST_ArithmeticExpressionNode));
 	node->type = AST_AR_EXP_OPERAND;
 	node->operand.type = AST_AR_EXP_CONSTANT;
 	node->operand.constant = constant;
@@ -30,9 +31,9 @@ AST_ArithmeticExpressionNode* New_AST_AR_EXP_ConstOperandNode(SIValue constant) 
 }
 
 AST_ArithmeticExpressionNode* New_AST_AR_EXP_OpNode(char *func, Vector *args) {
-	AST_ArithmeticExpressionNode *node = malloc(sizeof(AST_ArithmeticExpressionNode));
+	AST_ArithmeticExpressionNode *node = rm_malloc(sizeof(AST_ArithmeticExpressionNode));
 	node->type = AST_AR_EXP_OP;
-	node->op.function = strdup(func);
+	node->op.function = func;
 	node->op.args = args;
 	return node;
 }
@@ -67,9 +68,9 @@ void AR_EXP_GetFunctions(const AST_ArithmeticExpressionNode *exp, TrieMap *funct
 }
 
 void Free_AST_ArithmeticExpressionNode(AST_ArithmeticExpressionNode *arExpNode) {
-	/* Free arithmetic expression operation. */
+	/* free arithmetic expression operation. */
 	if(arExpNode->type == AST_AR_EXP_OP) {
-		/* Free each argument. */
+		/* free each argument. */
 		for(int i = 0; i < Vector_Size(arExpNode->op.args); i++) {
 			AST_ArithmeticExpressionNode *child;
 			Vector_Get(arExpNode->op.args, i, &child);
@@ -79,10 +80,10 @@ void Free_AST_ArithmeticExpressionNode(AST_ArithmeticExpressionNode *arExpNode) 
 	} else {
 		/* Node is an arithmetic expression operand. */
 		if(arExpNode->operand.type == AST_AR_EXP_VARIADIC) {
-			free(arExpNode->operand.variadic.alias);
-			free(arExpNode->operand.variadic.property);
+			rm_free(arExpNode->operand.variadic.alias);
+			rm_free(arExpNode->operand.variadic.property);
 		}
 	}
 	/* Finally we can free the node. */
-	free(arExpNode);
+	rm_free(arExpNode);
 }
